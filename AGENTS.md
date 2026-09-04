@@ -14,6 +14,8 @@ Fill these in for the repository using this template.
 - **Authoritative architecture:** `<ADRs, architecture docs, or repository paths that define durable constraints>`
 - **Task authority:** `<GitHub issues, tracker, or other source that defines current scope and acceptance criteria>`
 - **Primary validation:** `<commands that must pass before a normal change is complete>`
+- **Architecture decisions:** `<ADR location or "none">`
+- **Worklog:** `<worklog location or "none">`
 - **Hard invariants:**
   - `<durable, non-obvious rule that would be expensive to violate>`
   - `<durable, non-obvious rule that would be expensive to violate>`
@@ -30,8 +32,11 @@ Before non-trivial implementation:
 3. Read any more-specific `AGENTS.md` that applies to the files being changed.
 4. Inspect the relevant code, tests, configuration, and recent repository history.
 5. Read referenced product or architecture documents only when they are relevant to the task.
+6. Establish a green baseline with the narrowest relevant existing tests when practical.
 
 Repository reality is authoritative for what exists today. Do not speculate about code you have not inspected when the repository can answer the question.
+
+Do not assume a test, lint, build, or CI failure is pre-existing. Verify the baseline before using that explanation.
 
 If repository reality materially conflicts with the task contract or an architectural invariant, do not silently choose one. Surface the conflict when resolving it would change product behavior, architecture, security, data integrity, or migration risk.
 
@@ -93,9 +98,20 @@ AI output is never authoritative state merely because a model produced it. If th
 
 Never claim something was tested unless the relevant command actually ran successfully.
 
+For bug fixes and deterministic behavior changes, prefer a RED-first loop:
+
+1. Reproduce the defect or missing behavior with a focused failing test.
+2. Confirm the test fails for the expected reason.
+3. Make the smallest implementation change that makes it pass.
+4. Refactor only if needed while keeping the test green.
+
+For new behavior, write or update executable acceptance or regression coverage before or alongside implementation whenever practical.
+
+Tests should assert behavior rather than implementation details. Prefer real instances for pure logic and mock genuine side-effect boundaries when useful.
+
 For behavior changes:
 
-1. Run the narrowest useful test while implementing.
+1. Run the narrowest useful tests while implementing.
 2. Add regression coverage for fixed defects when practical.
 3. Run the repository's applicable quality gates before completion.
 4. Exercise representative end-to-end or user-visible behavior when the change affects a user workflow.
@@ -103,9 +119,38 @@ For behavior changes:
 
 Do not weaken assertions, skip failures, or change expected behavior merely to make tests pass.
 
+If RED-first testing or another expected verification step is genuinely impractical, document why and provide the best available regression evidence instead of silently skipping it.
+
 If a required verification step cannot run because of an environment or provider limitation, report the exact gap. Do not convert an unverified result into a pass.
 
-## 6. External Providers
+## 6. Architecture Decisions and Work History
+
+Create or update an ADR when a task makes a durable decision that is:
+
+- expensive or risky to reverse;
+- surprising to a future maintainer;
+- a meaningful architectural trade-off;
+- a change to system boundaries, authoritative state, persistence, security model, external-provider strategy, or major dependency/infrastructure choice.
+
+Do not create ADRs for ordinary implementation details.
+
+Accepted ADRs are historical records. Do not silently rewrite old decisions to match current reality. Supersede or amend them explicitly according to the repository's ADR convention.
+
+If the repository defines an agent worklog, use it for non-trivial work that benefits from cross-session audit, handoff, or replay context.
+
+A worklog is an execution record, not authoritative product or architecture state. Record concisely:
+
+- what changed;
+- why;
+- important evidence or trade-offs discovered;
+- verification performed;
+- unresolved follow-up or known limitations.
+
+Worklogs should be append-only when the repository uses them that way. Promote durable decisions into ADRs or canonical documentation, and promote current facts into the appropriate source of truth.
+
+Do not create worklog noise for trivial edits when the repository does not require it.
+
+## 7. External Providers
 
 When work depends on a current external API, SDK, service, protocol, or platform:
 
@@ -114,7 +159,7 @@ When work depends on a current external API, SDK, service, protocol, or platform
 - do not guess current provider behavior from model memory;
 - record provider constraints when they materially affect implementation or acceptance criteria.
 
-## 7. Security and Data Safety
+## 8. Security and Data Safety
 
 Never:
 
@@ -127,9 +172,22 @@ Never:
 
 Treat destructive operations, production writes, privilege changes, and irreversible migrations as explicit capabilities rather than implied permission.
 
-## 8. Git and Delivery
+## 9. Git and Delivery
 
 Follow the repository's existing branch, commit, PR, review, and merge conventions.
+
+Prefer small, coherent commits over one large implementation dump.
+
+Each commit should, whenever practical:
+
+- represent one logical change;
+- be understandable and reviewable on its own;
+- include the tests required for the behavior it introduces or changes;
+- leave the repository in a valid state and pass the relevant focused checks.
+
+Separate mechanical moves, renames, or no-op refactors from behavioral changes when doing so makes the history easier to verify. Do not mix unrelated cleanup into a feature or fix commit.
+
+Small commits are not a goal by themselves. Do not fragment one coherent change into meaningless checkpoint commits such as "fix tests", "fix lint", or "finish implementation" when those corrections belong in the logical commit that introduced the change.
 
 When the task contract permits delivery actions, the agent should perform routine commit, push, PR creation/update, review-fix, and CI-repair work without requiring repeated approval.
 
@@ -143,7 +201,15 @@ Permission to implement does not automatically grant permission to:
 
 Do not claim a commit, push, PR, merge, deployment, or check succeeded unless the corresponding operation actually succeeded.
 
-## 9. Definition of Done
+## 10. Definition of Done
+
+Before delivery, perform a final self-review:
+
+1. Re-read the original task and acceptance criteria.
+2. Review the final diff as a reviewer, not as its author.
+3. Remove unrelated changes and unnecessary abstraction.
+4. Confirm every claimed behavior has evidence.
+5. Confirm the implementation still solves the original problem rather than a nearby problem discovered during coding.
 
 A task is complete only when all applicable conditions are true:
 
@@ -152,6 +218,8 @@ A task is complete only when all applicable conditions are true:
 - representative user-visible behavior is verified when relevant;
 - security and failure paths were considered;
 - migrations, compatibility, idempotency, and replay implications were verified where relevant;
+- required ADRs are current when a durable architectural decision changed;
+- required worklog entries are current when the repository uses them for the task;
 - the diff contains no unrelated changes or secrets;
 - required documentation is current;
 - delivery state is accurate and backed by evidence;
@@ -159,7 +227,7 @@ A task is complete only when all applicable conditions are true:
 
 Do not report partial implementation as complete.
 
-## 10. Failure Conditions
+## 11. Failure Conditions
 
 The task is not complete if any applicable condition is true:
 
@@ -169,12 +237,14 @@ The task is not complete if any applicable condition is true:
 - security or authorization was weakened without explicit approval;
 - a migration or destructive operation remains materially unverified;
 - implementation relies on an unverified external-provider assumption;
+- a durable architectural decision changed without the repository's required decision record;
+- a required worklog entry is missing;
 - unrelated changes are mixed into the diff;
 - completion claims cannot be supported by repository or test evidence.
 
 Report the exact blocker instead.
 
-## 11. Rule Hygiene
+## 12. Rule Hygiene
 
 Always-on instructions have a continuing context cost. New root rules should normally be added only when they are all three of:
 
@@ -196,6 +266,6 @@ Do not use this file as:
 - implementation history;
 - a collection of one-off task instructions.
 
-Put durable architecture decisions in ADRs or architecture docs. Put current scope and acceptance criteria in issues or task contracts. Put discoverable implementation truth in code and tests.
+Put durable architecture decisions in ADRs or architecture docs. Put current scope and acceptance criteria in issues or task contracts. Put discoverable implementation truth in code and tests. Put execution history in a worklog only when the repository uses one, and do not treat that worklog as current truth.
 
 Treat changes to agent instructions as behavior changes. Review them against representative agent tasks instead of assuming more prose produces better outcomes.
