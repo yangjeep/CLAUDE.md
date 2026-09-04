@@ -2,87 +2,43 @@
 
 A reusable project-level execution contract for coding agents.
 
-This repository contains a deliberately small pair of files:
+## TL;DR
 
-- [`AGENTS.md`](AGENTS.md) — the agent-neutral execution contract.
-- [`CLAUDE.md`](CLAUDE.md) — a thin Claude Code adapter that imports the same contract.
+Copy [`AGENTS.md`](AGENTS.md) into your project, fill in the **Project Contract**, and let coding agents work from repository truth instead of an ever-growing prompt.
 
-The goal is not to document an entire codebase for an agent. The goal is to give an agent the minimum durable context needed to execute safely and autonomously, then let it inspect repository truth just in time.
+If you use Claude Code, copy [`CLAUDE.md`](CLAUDE.md) too. It imports the same contract.
+
+The default workflow is simple: inspect first, establish a baseline, test behavior, make the smallest working change, commit coherent slices, record durable decisions when needed, and verify before declaring done.
 
 ## Use it
 
-Copy `AGENTS.md` into the root of a project and fill in its **Project Contract** section:
-
-- mission;
-- authoritative architecture sources;
-- task/issue authority;
-- primary validation commands;
-- ADR location, if the project uses ADRs;
-- worklog location, if the project uses an agent worklog;
-- a short list of hard invariants.
-
-If the project uses Claude Code, copy `CLAUDE.md` as well.
-
-Then keep task-specific requirements in issues or other task contracts rather than growing the root instructions for every new feature.
+1. Copy [`AGENTS.md`](AGENTS.md) to the root of your repository.
+2. Fill in the **Project Contract**:
+   - mission;
+   - authoritative architecture sources;
+   - task/issue authority;
+   - primary validation commands;
+   - ADR location, if used;
+   - worklog location, if used;
+   - a short list of hard invariants.
+3. If you use Claude Code, copy [`CLAUDE.md`](CLAUDE.md) as well.
+4. Keep task-specific scope and acceptance criteria in issues or task contracts instead of growing the root instructions for every feature.
 
 ## Design principles
 
-### Execution, not plan theater
-
-Once implementation has been authorized, routine engineering decisions, repository inspection, testing, debugging, CI repair, and permitted delivery actions should proceed without repeatedly asking the human to continue.
-
-Human input is reserved for genuine product ambiguity, architecture changes, meaningful data/migration risk, security-risk acceptance, unavailable external capabilities, irreversible production actions, or materially different valid outcomes.
-
-### Traps, not maps
-
-Always-on rules should capture durable, non-obvious failure modes. Architecture descriptions, module maps, API references, current status, and implementation history belong elsewhere because agents can inspect them when needed and those descriptions go stale quickly.
-
-A new root rule should normally be:
-
-1. non-obvious;
-2. repeatedly encountered or durably risky;
-3. specific enough to change behavior.
-
 ### Repository truth first
-
-Agents should inspect code, tests, configuration, and recent repository history before making claims about implementation details. Instructions should define boundaries and authority, not replace repository discovery.
-
-Before changing behavior, establish a green baseline with the narrowest relevant existing tests when practical. A failing check should not be dismissed as "pre-existing" without evidence.
 
 ### Smallest working change
 
-Prefer focused diffs, existing patterns, and one problem per change. Avoid speculative abstractions, unrelated cleanup, unnecessary dependencies, and architecture expansion.
-
-### Test behavior, then implement
-
-For bugs and deterministic behavior changes, prefer a RED → GREEN → REFACTOR loop:
-
-1. reproduce the missing or broken behavior with a focused failing test;
-2. confirm the failure is for the expected reason;
-3. make the smallest implementation change that passes;
-4. refactor only while staying green.
-
-The contract intentionally stops short of demanding mechanical TDD for every possible file type. When RED-first testing is genuinely impractical, the agent should explain the gap and provide the best available regression evidence.
+### Test behavior first
 
 ### Small, coherent commits
 
-Prefer logical commits that are independently understandable and reviewable over one large implementation dump.
+### Durable decisions belong in ADRs
 
-A good commit represents one coherent change, carries the tests required for that change, and leaves the repository valid when practical. Mechanical moves and behavior changes should be separated when that makes review easier.
-
-Small does not mean noisy: checkpoint commits such as `fix tests`, `fix lint`, or `finish implementation` are not useful history when those fixes belong in the logical commit that introduced the change.
-
-### Decisions are different from history
-
-Use ADRs for durable decisions that are expensive to reverse, surprising, or defined by meaningful architectural trade-offs. Accepted decisions are historical records; supersede or amend them instead of silently rewriting the past.
-
-Use worklogs, when a repository has them, for execution history and cross-session handoff. A worklog is not authoritative architecture or product truth. Promote durable decisions into ADRs and current facts into their canonical source.
+### Worklogs are history, not truth
 
 ### Evidence-backed completion
-
-A task is complete because required behavior was implemented and verified, not because an agent says it is done. Test, build, commit, PR, merge, and deployment claims should correspond to operations that actually succeeded.
-
-Before delivery, the agent should re-read the original task, review the final diff as a reviewer, remove scope drift and unnecessary abstraction, and confirm every claimed behavior has evidence.
 
 ## Where information belongs
 
@@ -100,9 +56,7 @@ Before delivery, the agent should re-read the original task, review the final di
 
 ## Evolution
 
-Do not automatically add a rule every time an agent makes a mistake.
-
-Use this filter:
+Do not add a root rule every time an agent makes a mistake.
 
 ```text
 Agent makes a mistake
@@ -120,7 +74,7 @@ Can code, types, tests, lint, or CI enforce it deterministically?
         └─ no → add the narrowest applicable agent rule
 ```
 
-The best long-term outcome is not an ever-growing instruction file. As a repository becomes easier for agents to understand and verify, its always-on contract should stay small or become smaller.
+As a repository becomes easier for agents to understand and verify, its always-on contract should stay small or become smaller.
 
 ## License
 
