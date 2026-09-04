@@ -4,41 +4,33 @@ A reusable project-level execution contract for coding agents.
 
 ## TL;DR
 
-Copy [`AGENTS.md`](AGENTS.md) into your project, fill in the **Project Contract**, and let coding agents work from repository truth instead of an ever-growing prompt.
+Use this repository as a GitHub template, fill in the **Project Contract** in [`AGENTS.md`](AGENTS.md), and start working.
 
-If you use Claude Code, copy [`CLAUDE.md`](CLAUDE.md) too. It imports the same contract.
-
-The default workflow is simple: inspect first, establish a baseline, test behavior, make the smallest working change, commit coherent slices, record durable decisions when needed, and verify before declaring done.
+`AGENTS.md` is agent-neutral. [`CLAUDE.md`](CLAUDE.md) is the Claude Code adapter and imports the same contract.
 
 ## Use it
 
-1. Copy [`AGENTS.md`](AGENTS.md) to the root of your repository.
-2. Fill in the **Project Contract**:
+1. Click **Use this template** on GitHub and create your repository.
+2. Fill in the **Project Contract** in `AGENTS.md`:
    - mission;
    - authoritative architecture sources;
    - task/issue authority;
    - primary validation commands;
    - ADR location, if used;
    - worklog location, if used;
-   - a short list of hard invariants.
-3. If you use Claude Code, copy [`CLAUDE.md`](CLAUDE.md) as well.
-4. Keep task-specific scope and acceptance criteria in issues or task contracts instead of growing the root instructions for every feature.
+   - hard invariants.
+3. Keep task-specific scope and acceptance criteria in issues or task contracts instead of growing the root instructions for every feature.
+4. Remove `CLAUDE.md` if you do not use Claude Code.
 
 ## Design principles
 
-### Repository truth first
-
-### Smallest working change
-
-### Test behavior first
-
-### Small, coherent commits
-
-### Durable decisions belong in ADRs
-
-### Worklogs are history, not truth
-
-### Evidence-backed completion
+- Repository truth first
+- Smallest working change
+- Test behavior first
+- Small, coherent commits
+- Durable decisions belong in ADRs
+- Worklogs are history, not truth
+- Evidence-backed completion
 
 ## Where information belongs
 
