@@ -1,26 +1,37 @@
 # AGENTS.md
 
-A reusable project-level execution contract for coding agents.
+A small template for repository-level coding-agent instructions and durable agent work records.
 
 ## TL;DR
 
-Use this repository as a GitHub template, fill in the **Project Contract** in [`AGENTS.md`](AGENTS.md), and start working.
+Click **Use this template**, create your repository, then customize the **Project Contract** at the top of [`CLAUDE.md`](CLAUDE.md).
 
-`AGENTS.md` is agent-neutral. [`CLAUDE.md`](CLAUDE.md) is the Claude Code adapter and imports the same contract.
+The template keeps one agent-facing file at the repository root and puts optional decision/history records under [`.agent/`](.agent/).
 
 ## Use it
 
-1. Click **Use this template** on GitHub and create your repository.
-2. Fill in the **Project Contract** in `AGENTS.md`:
-   - mission;
-   - authoritative architecture sources;
-   - task/issue authority;
-   - primary validation commands;
-   - ADR location, if used;
-   - worklog location, if used;
-   - hard invariants.
-3. Keep task-specific scope and acceptance criteria in issues or task contracts instead of growing the root instructions for every feature.
-4. Remove `CLAUDE.md` if you do not use Claude Code.
+1. Click **Use this template** on GitHub.
+2. Fill in the **Project Contract** in [`CLAUDE.md`](CLAUDE.md): mission, architecture authority, task authority, validation commands, and hard invariants.
+3. Keep task-specific scope and acceptance criteria in issues or task contracts.
+4. Use [`.agent/ADR/`](.agent/ADR/) only for durable architectural decisions.
+5. Use [`.agent/WORKLOG/`](.agent/WORKLOG/) for non-trivial execution history when handoff, debugging, or replay context is useful.
+6. Delete unused templates if your repository does not need them.
+
+## Template structure
+
+```text
+CLAUDE.md
+.agent/
+  README.md
+  ADR/
+    README.md
+    TEMPLATE.md
+  WORKLOG/
+    README.md
+    TEMPLATE.md
+README.md
+LICENSE
+```
 
 ## Design principles
 
@@ -36,37 +47,24 @@ Use this repository as a GitHub template, fill in the **Project Contract** in [`
 
 | Information | Preferred home |
 | --- | --- |
-| Durable agent behavior and recurring traps | `AGENTS.md` |
-| Harness-specific adapter instructions | `CLAUDE.md` or equivalent |
-| Product intent for a specific change | Issue / task contract |
-| Acceptance criteria | Issue / task contract |
-| Durable architecture decisions | ADRs / architecture docs |
-| Execution history / cross-session handoff | Worklog, if the project uses one |
+| Durable agent behavior and recurring traps | `CLAUDE.md` |
+| Product intent / acceptance criteria for a change | Issue / task contract |
+| Durable architecture decisions | `.agent/ADR/` |
+| Execution history / cross-session handoff | `.agent/WORKLOG/` |
 | Implementation truth | Code, tests, schemas, configuration |
-| Local subsystem traps | Nested `AGENTS.md` |
 | Current backlog / status | Issue tracker |
+
+## Compatibility
+
+Claude Code uses `CLAUDE.md` directly.
+
+OpenCode's current rules documentation supports project `CLAUDE.md` as a fallback when no `AGENTS.md` exists. OpenCode V2 currently discovers only `AGENTS.md`; if you use that mode, copy or symlink `CLAUDE.md` to `AGENTS.md` for compatibility.
 
 ## Evolution
 
-Do not add a root rule every time an agent makes a mistake.
+Do not add a root rule every time an agent makes a mistake. Prefer code, tests, types, lint, CI, or better repository discoverability when they can enforce the lesson deterministically.
 
-```text
-Agent makes a mistake
-        ↓
-Could repository inspection have answered it?
-        ├─ yes → improve execution, tooling, tests, or discoverability
-        └─ no
-             ↓
-Is the lesson non-obvious, repeated, and actionable?
-        ├─ no → do not add an always-on rule
-        └─ yes
-             ↓
-Can code, types, tests, lint, or CI enforce it deterministically?
-        ├─ yes → encode it there
-        └─ no → add the narrowest applicable agent rule
-```
-
-As a repository becomes easier for agents to understand and verify, its always-on contract should stay small or become smaller.
+Add an always-on rule only when the lesson is non-obvious, repeated or durably risky, and actionable.
 
 ## License
 
