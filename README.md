@@ -1,4 +1,4 @@
-# AGENTS.md
+# CLAUDE.md
 
 A small template for repository-level coding-agent instructions and durable agent work records.
 
